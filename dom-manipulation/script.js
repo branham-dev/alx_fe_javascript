@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// location.reload();
 	});
 
-	addNewQuote.addEventListener("click", () => {
+	const addQuote = () => {
 		const quoteInput = document.getElementById("newQuoteText");
 		const categoryInput = document.getElementById("newQuoteCategory");
 		const newQuoteText = quoteInput.value;
@@ -86,5 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			quoteInput.value = "";
 			categoryInput.value = "";
 		}
-	});
+	};
+
+	addNewQuote.addEventListener("click", addQuote);
 });
