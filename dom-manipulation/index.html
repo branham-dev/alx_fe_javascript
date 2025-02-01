@@ -7,10 +7,10 @@
 	</head>
 	<body>
 		<h1>Dynamic Quote Generator</h1>
-        <select id="categoryFilter" onchange="filterQuotes()">
-    <option value="all">All Categories</option>
-    <!-- Dynamically populated categories -->
-  </select>
+		<select id="categoryFilter" onchange="filterQuotes()">
+			<option value="all">All Categories</option>
+			<!-- Dynamically populated categories -->
+		</select>
 		<div id="quoteDisplay"></div>
 		<button id="newQuote">Show New Quote</button>
 		<br />
@@ -25,6 +25,7 @@
 			<br />
 			<br />
 			<button id="addNewQuote">Add Quote</button>
+			<button style="display: none">Export Quotes</button>
 			<br />
 			<br />
 			<input type="file" id="importFile" accept=".json" multiple />
