@@ -45,8 +45,44 @@ document.addEventListener("DOMContentLoaded", () => {
 	const quoteDisplay = document.getElementById("quoteDisplay");
 	const newQuote = document.getElementById("newQuote");
 	const addNewQuote = document.getElementById("addNewQuote");
+	const importFile = document.getElementById("importFile");
+	const categoryFilter = document.getElementById("categoryFilter");
+
+	const quoteRecord = [];
+
+    // categoryFilter.addEventListener('')
+
+	const saveOrRetrieve = (obj, quote, command) => {
+		const storedQuotes = JSON.parse(localStorage.getItem("quotes")) || quotesCollection;
+		if (quote === undefined && command === undefined) {
+			// console.log(storedQuotes);
+			return storedQuotes;
+		} else if (quote && command === "save") {
+			storedQuotes.push(quote);
+			localStorage.setItem("quotes", JSON.stringify(storedQuotes));
+			return undefined;
+		} else if (quote && command === "record") {
+			quoteRecord.push(quote);
+			// console.log(quoteRecord);
+			if (quoteRecord.length === 2) {
+				sessionStorage.setItem("lastQuote", JSON.stringify(quoteRecord[0]));
+				quoteRecord.shift();
+			} else {
+				return;
+			}
+		} else if (obj && command === "import") {
+			obj.map((quote) => {
+				storedQuotes.push(quote);
+				localStorage.setItem("quotes", JSON.stringify(storedQuotes));
+			});
+			return undefined;
+		} else {
+			return;
+		}
+	};
 
 	const showRandomQuote = () => {
+		const quotesCollection = saveOrRetrieve();
 		const random = Math.floor(Math.random() * quotesCollection.length);
 		// return random;
 		quoteDisplay.innerHTML = "";
@@ -57,6 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		const quoteCategory = document.createElement("p");
 		quoteCategory.textContent = quotesCollection[random].category;
 		// quoteCategory.textContent = quotesCollection[showRandomQuote()].category;
+		const lastQuoteObj = { text: quoteText.textContent, category: quoteCategory.textContent };
+		saveOrRetrieve(undefined, lastQuoteObj, "record");
+		// console.log(quoteText.textContent, quoteCategory.textContent)
 		article.appendChild(quoteText);
 		article.appendChild(quoteCategory);
 		quoteDisplay.appendChild(article);
@@ -80,13 +119,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (newQuoteText && newQuoteCategory) {
 			const newQuoteObj = { text: newQuoteText, category: newQuoteCategory };
-			console.log(newQuoteObj);
-			quotesCollection.push(newQuoteObj);
-			console.log(quotesCollection);
+			saveOrRetrieve(undefined, newQuoteObj, "save");
+			// console.log(newQuoteObj);
+			// quotesCollection.push(newQuoteObj);
+			// console.log(quotesCollection);
 			quoteInput.value = "";
 			categoryInput.value = "";
 		}
 	};
 
 	addNewQuote.addEventListener("click", createAddQuoteForm);
+
+	const exportQuotes = () => {
+		const toRemove = document.getElementById("quotesLink");
+		if (toRemove) {
+			document.body.removeChild(toRemove);
+		}
+		const quotes = JSON.stringify(saveOrRetrieve());
+		const quotesBlob = new Blob([quotes], { type: "application/json" });
+		const quotesUrl = URL.createObjectURL(quotesBlob);
+		// console.log(quotesUrl);
+		const link = document.createElement("a");
+		link.id = "quotesLink";
+		link.href = quotesUrl;
+		link.download = "quotes.json";
+		link.innerText = "Download the exported quotes";
+		document.body.prepend(link);
+		console.log(quotes);
+		link.onclick = () => {
+			setTimeout(() => {
+				document.body.removeChild(link);
+				URL.revokeObjectURL(quotesUrl);
+			}, 100);
+		};
+	};
+
+	const exportButton = () => {
+		const button = document.createElement("button");
+		button.textContent = "Export Quotes";
+		document.body.insertBefore(button, document.body.children[4]);
+
+		button.addEventListener("click", exportQuotes);
+	};
+	exportButton();
+
+	const importFromJsonFile = (e) => {
+		const fileList = e.target.files;
+		const numFiles = fileList.length;
+		// console.log(fileList);
+		// console.log(numFiles);
+		const fileReader = new FileReader();
+		fileReader.onload = (event) => {
+			try {
+				const importedQuotes = JSON.parse(event.target.result);
+				console.log(importedQuotes);
+				saveOrRetrieve(importedQuotes, undefined, "import");
+			} catch (error) {
+				console.error(`Error parsing JSON: ${error.message}`);
+			}
+		};
+		fileReader.readAsText(fileList[0]);
+	};
+	importFile.addEventListener("change", importFromJsonFile, false);
 });
