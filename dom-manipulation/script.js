@@ -52,9 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const filterQuotes = (e) => {
 		console.log(e.target.value);
-		const category = e.target.value;
-		saveOrRetrieve(category, undefined, undefined, "saveCategory");
-		showRandomQuote(category);
+		const selectedCategory = e.target.value;
+		saveOrRetrieve(selectedCategory, undefined, undefined, "saveCategory");
+		showRandomQuote(selectedCategory);
 	};
 
 	categoryFilter.addEventListener("change", filterQuotes);
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 	populateCategories();
 	categoryFilter.value = saveOrRetrieve(undefined, undefined, undefined, "getCategory");
-    
+
 	const showRandomQuote = (value) => {
 		let quotesCollection = null;
 		if (value === "all") {
