@@ -50,11 +50,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const quoteRecord = [];
 
-    // categoryFilter.addEventListener('')
+	const filterQuotes = (e) => {
+		console.log(e.target.value);
+		const category = e.target.value;
+		saveOrRetrieve(category, undefined, undefined, "saveCategory");
+		showRandomQuote(category);
+	};
 
-	const saveOrRetrieve = (obj, quote, command) => {
+	categoryFilter.addEventListener("change", filterQuotes);
+
+	const saveOrRetrieve = (category, obj, quote, command) => {
 		const storedQuotes = JSON.parse(localStorage.getItem("quotes")) || quotesCollection;
-		if (quote === undefined && command === undefined) {
+		if (category === undefined && obj === undefined && quote === undefined && command === undefined) {
 			// console.log(storedQuotes);
 			return storedQuotes;
 		} else if (quote && command === "save") {
@@ -76,13 +83,57 @@ document.addEventListener("DOMContentLoaded", () => {
 				localStorage.setItem("quotes", JSON.stringify(storedQuotes));
 			});
 			return undefined;
+		} else if (category && command === "saveCategory") {
+			localStorage.setItem("category", JSON.stringify(category));
+		} else if (!category && command === "getCategory") {
+			const storedCategory = JSON.parse(localStorage.getItem("category"));
+			console.log(storedCategory);
+			return storedCategory;
 		} else {
 			return;
 		}
 	};
 
-	const showRandomQuote = () => {
-		const quotesCollection = saveOrRetrieve();
+	// const setSelectValue = () => {
+	// 	const savedCategory = saveOrRetrieve(undefined, undefined, undefined, "getCategory");
+	// 	categoryFilter.value = saveOrRetrieve;
+	// 	console.log(savedCategory);
+	// };
+	// setSelectValue();
+
+	const populateCategories = () => {
+		const storedQuotes = saveOrRetrieve();
+		const allCategories = storedQuotes.map(({ category }) => category);
+		const categories = [...new Set(allCategories)];
+
+		if (categoryFilter) {
+			categoryFilter.innerHTML = ""; // Clear existing options
+			categories.map((category) => {
+				const option = document.createElement("option");
+				option.value = category;
+				option.textContent = category;
+				categoryFilter.appendChild(option);
+			});
+		}
+		console.log(categories);
+	};
+	populateCategories();
+	categoryFilter.value = saveOrRetrieve(undefined, undefined, undefined, "getCategory");
+    
+	const showRandomQuote = (value) => {
+		let quotesCollection = null;
+		if (value === "all") {
+			quotesCollection = saveOrRetrieve();
+		} else {
+			const allCollection = saveOrRetrieve();
+			quotesCollection = [];
+			for (let i = 0; i < allCollection.length; i++) {
+				if (allCollection[i].category === value) {
+					quotesCollection.push(allCollection[i]);
+				}
+			}
+			console.log(quotesCollection);
+		}
 		const random = Math.floor(Math.random() * quotesCollection.length);
 		// return random;
 		quoteDisplay.innerHTML = "";
@@ -94,20 +145,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		quoteCategory.textContent = quotesCollection[random].category;
 		// quoteCategory.textContent = quotesCollection[showRandomQuote()].category;
 		const lastQuoteObj = { text: quoteText.textContent, category: quoteCategory.textContent };
-		saveOrRetrieve(undefined, lastQuoteObj, "record");
+		saveOrRetrieve(undefined, undefined, lastQuoteObj, "record");
 		// console.log(quoteText.textContent, quoteCategory.textContent)
 		article.appendChild(quoteText);
 		article.appendChild(quoteCategory);
 		quoteDisplay.appendChild(article);
-		console.log(quotesCollection);
+		// console.log(quotesCollection);
 		// setTimeout(() => {
 		// 	console.clear(quotesCollection);
 		// }, 30000);
 	};
-	showRandomQuote();
+
+	showRandomQuote(saveOrRetrieve(undefined, undefined, undefined, "getCategory"));
 
 	newQuote.addEventListener("click", () => {
-		showRandomQuote();
+		showRandomQuote(saveOrRetrieve(undefined, undefined, undefined, "getCategory"));
 		// location.reload();
 	});
 
@@ -119,7 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (newQuoteText && newQuoteCategory) {
 			const newQuoteObj = { text: newQuoteText, category: newQuoteCategory };
-			saveOrRetrieve(undefined, newQuoteObj, "save");
+			saveOrRetrieve(undefined, undefined, newQuoteObj, "save");
+			populateCategories();
 			// console.log(newQuoteObj);
 			// quotesCollection.push(newQuoteObj);
 			// console.log(quotesCollection);
@@ -173,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			try {
 				const importedQuotes = JSON.parse(event.target.result);
 				console.log(importedQuotes);
-				saveOrRetrieve(importedQuotes, undefined, "import");
+				saveOrRetrieve(undefined, importedQuotes, undefined, "import");
 			} catch (error) {
 				console.error(`Error parsing JSON: ${error.message}`);
 			}
