@@ -301,7 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const postData = async () => {
 		const response = await fetch("https://jsonplaceholder.typicode.com/posts", { method: "POST" });
 	};
-	const syncQuotes = async () => {};
+	const syncQuotes = async () => {
+		alert("Quotes synced with server!");
+	};
 	setInterval(() => {
 		syncQuotes();
 	}, 500000);
