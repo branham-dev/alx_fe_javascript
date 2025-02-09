@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 	importFile.addEventListener("change", importFromJsonFile, false);
 
-	// ! CRAP
+	// ! TODO and redundant
 
 	const fetchData = async () => {
 		const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -301,5 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const postData = async () => {
 		const response = await fetch("https://jsonplaceholder.typicode.com/posts", { method: "POST" });
 	};
+	const syncQuotes = async () => {};
 });
 // localStorage.clear();
