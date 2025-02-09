@@ -292,5 +292,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		fileReader.readAsText(fileList[0]);
 	};
 	importFile.addEventListener("change", importFromJsonFile, false);
+
+	// ! CRAP
+
+	const fetchData = async () => {
+		const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+	};
 });
 // localStorage.clear();
