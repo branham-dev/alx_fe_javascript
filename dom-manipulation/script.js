@@ -302,5 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const response = await fetch("https://jsonplaceholder.typicode.com/posts", { method: "POST" });
 	};
 	const syncQuotes = async () => {};
+	setInterval(() => {
+		syncQuotes();
+	}, 500000);
 });
 // localStorage.clear();
