@@ -1,52 +1,93 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const quotesCollection = [
 		{
-			text: "The only way to do great work is to love what you do.",
+			quote: "The only way to do great work is to love what you do.",
 			category: "Motivation",
 		},
 		{
-			text: "In the middle of every difficulty lies opportunity.",
+			quote: "In the middle of every difficulty lies opportunity.",
 			category: "Wisdom",
 		},
 		{
-			text: "Simplicity is the soul of efficiency.",
+			quote: "Simplicity is the soul of efficiency.",
 			category: "Productivity",
 		},
 		{
-			text: "Your time is limited, so don’t waste it living someone else’s life.",
+			quote: "Your time is limited, so don’t waste it living someone else’s life.",
 			category: "Life",
 		},
 		{
-			text: "A person who never made a mistake never tried anything new.",
+			quote: "A person who never made a mistake never tried anything new.",
 			category: "Innovation",
 		},
 		{
-			text: "The function of good software is to make the complex appear to be simple.",
+			quote: "The function of good software is to make the complex appear to be simple.",
 			category: "Technology",
 		},
 		{
-			text: "It’s not that we use technology, we live technology.",
+			quote: "It’s not that we use technology, we live technology.",
 			category: "Technology",
 		},
 		{
-			text: "Success is not in what you have, but who you are.",
+			quote: "Success is not in what you have, but who you are.",
 			category: "Success",
 		},
 		{
-			text: "The secret of getting ahead is getting started.",
+			quote: "The secret of getting ahead is getting started.",
 			category: "Motivation",
 		},
 		{
-			text: "Creativity is intelligence having fun.",
+			quote: "Creativity is intelligence having fun.",
 			category: "Creativity",
 		},
 	];
+
+	if (!localStorage.getItem("quotes")) {
+		localStorage.setItem("quotes", JSON.stringify(quotesCollection));
+	}
 
 	const quoteDisplay = document.getElementById("quoteDisplay");
 	const newQuote = document.getElementById("newQuote");
 	const addNewQuote = document.getElementById("addNewQuote");
 	const importFile = document.getElementById("importFile");
 	const categoryFilter = document.getElementById("categoryFilter");
+	const syncServer = document.getElementById("syncServer");
+
+	const fetchQuotesFromServer = async () => {
+		try {
+			const response = await fetch("https://api.api-ninjas.com/v1/quotes", {
+				method: "GET",
+				headers: {
+					"X-Api-Key": "bBAoORicgvkiHDotTAaI/w==4s2Nsv9miD9jVrfI", // Secure storage
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+			const data = await response.json();
+			if (data && data.length > 0) {
+				const { quote, category } = data[0];
+				const storedQuotes = saveOrRetrieve();
+				const exists = storedQuotes.some((q) => q.quote === quote);
+
+				if (!exists) {
+					saveOrRetrieve(undefined, undefined, { quote, category }, "save");
+				}
+				console.log("Updated quotes:", saveOrRetrieve());
+			} else {
+				console.error("No quotes found in the response.");
+			}
+		} catch (error) {
+			console.error("Error fetching quotes:", error.message);
+		}
+	};
+
+	syncServer.addEventListener("click", () => {
+		fetchQuotesFromServer();
+		const storedQuotes = saveOrRetrieve();
+		console.log(storedQuotes);
+	});
 
 	const quoteRecord = [];
 
@@ -60,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	categoryFilter.addEventListener("change", filterQuotes);
 
 	const saveOrRetrieve = (category, obj, quote, command) => {
-		const storedQuotes = JSON.parse(localStorage.getItem("quotes")) || quotesCollection;
+		const storedQuotes = JSON.parse(localStorage.getItem("quotes"));
 		if (category === undefined && obj === undefined && quote === undefined && command === undefined) {
 			// console.log(storedQuotes);
 			return storedQuotes;
@@ -94,6 +135,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
+	const categoryOfGod = () => {
+		const newArray = [];
+		const storedQuotes = saveOrRetrieve();
+		for (let i = 0; i < storedQuotes.length; i++) {
+			if (storedQuotes[i].category === "god") {
+				storedQuotes[i].category = "God";
+			}
+			newArray.push(storedQuotes[i]);
+		}
+		localStorage.setItem("quotes", JSON.stringify(newArray));
+	};
+	categoryOfGod();
+
 	// const setSelectValue = () => {
 	// 	const savedCategory = saveOrRetrieve(undefined, undefined, undefined, "getCategory");
 	// 	categoryFilter.value = saveOrRetrieve;
@@ -107,7 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		const categories = [...new Set(allCategories)];
 
 		if (categoryFilter) {
+			const first = categoryFilter.firstElementChild;
 			categoryFilter.innerHTML = ""; // Clear existing options
+			categoryFilter.appendChild(first);
 			categories.map((category) => {
 				const option = document.createElement("option");
 				option.value = category;
@@ -135,25 +191,27 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.log(quotesCollection);
 		}
 		const random = Math.floor(Math.random() * quotesCollection.length);
-		// return random;
-		quoteDisplay.innerHTML = "";
-		const article = document.createElement("article");
-		const quoteText = document.createElement("p");
-		quoteText.textContent = quotesCollection[random].text;
-		// quoteText.textContent = quotesCollection[showRandomQuote()].text;
-		const quoteCategory = document.createElement("p");
-		quoteCategory.textContent = quotesCollection[random].category;
-		// quoteCategory.textContent = quotesCollection[showRandomQuote()].category;
-		const lastQuoteObj = { text: quoteText.textContent, category: quoteCategory.textContent };
-		saveOrRetrieve(undefined, undefined, lastQuoteObj, "record");
-		// console.log(quoteText.textContent, quoteCategory.textContent)
-		article.appendChild(quoteText);
-		article.appendChild(quoteCategory);
-		quoteDisplay.appendChild(article);
-		// console.log(quotesCollection);
-		// setTimeout(() => {
-		// 	console.clear(quotesCollection);
-		// }, 30000);
+		if (quotesCollection.length > 0) {
+			// return random;
+			quoteDisplay.innerHTML = "";
+			const article = document.createElement("article");
+			const quoteText = document.createElement("p");
+			quoteText.textContent = quotesCollection[random].quote;
+			// quoteText.textContent = quotesCollection[showRandomQuote()].text;
+			const quoteCategory = document.createElement("p");
+			quoteCategory.textContent = quotesCollection[random].category;
+			// quoteCategory.textContent = quotesCollection[showRandomQuote()].category;
+			const lastQuoteObj = { quote: quoteText.textContent, category: quoteCategory.textContent };
+			saveOrRetrieve(undefined, undefined, lastQuoteObj, "record");
+			// console.log(quoteText.textContent, quoteCategory.textContent)
+			article.appendChild(quoteText);
+			article.appendChild(quoteCategory);
+			quoteDisplay.appendChild(article);
+			// console.log(quotesCollection);
+			// setTimeout(() => {
+			// 	console.clear(quotesCollection);
+			// }, 30000);
+		}
 	};
 
 	showRandomQuote(saveOrRetrieve(undefined, undefined, undefined, "getCategory"));
@@ -170,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const newQuoteCategory = categoryInput.value;
 
 		if (newQuoteText && newQuoteCategory) {
-			const newQuoteObj = { text: newQuoteText, category: newQuoteCategory };
+			const newQuoteObj = { quote: newQuoteText, category: newQuoteCategory };
 			saveOrRetrieve(undefined, undefined, newQuoteObj, "save");
 			populateCategories();
 			// console.log(newQuoteObj);
@@ -235,3 +293,4 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 	importFile.addEventListener("change", importFromJsonFile, false);
 });
+// localStorage.clear();
